@@ -35,17 +35,31 @@ const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } })
 async function ensureInit() {
   await fsp.mkdir(dataDir, { recursive: true })
   await fsp.mkdir(imagesDir, { recursive: true })
+  try { await fsp.chmod(dataDir, 0o755) } catch {}
+  try { await fsp.chmod(imagesDir, 0o755) } catch {}
   try {
     await fsp.access(tradesFile, fs.constants.F_OK)
   } catch {
     await fsp.writeFile(tradesFile, '[]', 'utf-8')
+    try { await fsp.chmod(tradesFile, 0o664) } catch {}
   }
 }
 
 async function readTrades() {
-  const buf = await fsp.readFile(tradesFile, 'utf-8')
-  const data = JSON.parse(buf || '[]')
-  return Array.isArray(data) ? data : []
+  let buf = '[]'
+  try {
+    buf = await fsp.readFile(tradesFile, 'utf-8')
+  } catch {}
+  try {
+    const data = JSON.parse(buf || '[]')
+    return Array.isArray(data) ? data : []
+  } catch (e) {
+    const backup = tradesFile + '.corrupt.' + Date.now() + '.bak'
+    try { await fsp.rename(tradesFile, backup) } catch {}
+    try { await fsp.writeFile(tradesFile, '[]', 'utf-8') } catch {}
+    try { await fsp.chmod(tradesFile, 0o664) } catch {}
+    return []
+  }
 }
 
 let writing = Promise.resolve()
@@ -54,6 +68,7 @@ function writeTrades(trades) {
     const tmp = tradesFile + '.tmp'
     await fsp.writeFile(tmp, JSON.stringify(trades, null, 2), 'utf-8')
     await fsp.rename(tmp, tradesFile)
+    try { await fsp.chmod(tradesFile, 0o664) } catch {}
   }
   writing = writing.then(task, task)
   return writing

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { TradeRecord } from '../types/trade';
-import { loadTradesFromLocalStorage, saveTradesToLocalStorage } from '../services/tradeService';
+import { loadTrades, addTrade as apiAddTrade, updateTrade as apiUpdateTrade, deleteTrade as apiDeleteTrade } from '../services/tradeService';
 
 interface TradeState {
   trades: TradeRecord[];
@@ -15,7 +15,7 @@ interface TradeState {
   
   // 操作方法
   setTrades: (trades: TradeRecord[]) => void;
-  addTrade: (trade: TradeRecord) => void;
+  addTrade: (trade: Omit<TradeRecord, 'id' | 'createdAt' | 'updatedAt'>) => Promise<TradeRecord>;
   updateTrade: (id: string, updates: Partial<TradeRecord>) => void;
   deleteTrade: (id: string) => void;
   setFilter: (filter: TradeState['currentFilter']) => void;
@@ -33,32 +33,24 @@ export const useTradeStore = create<TradeState>((set, get) => ({
   
   setTrades: (trades) => set({ trades }),
   
-  addTrade: (trade) => {
+  addTrade: async (trade) => {
+    const created = await apiAddTrade(trade);
     const { trades } = get();
-    const newTrades = [...trades, trade];
-    set({ trades: newTrades });
-    // 自动保存
-    setTimeout(() => get().saveTrades(), 0);
+    set({ trades: [...trades, created] });
+    return created;
   },
   
-  updateTrade: (id, updates) => {
+  updateTrade: async (id, updates) => {
+    const updated = await apiUpdateTrade(id, updates);
     const { trades } = get();
-    const newTrades = trades.map(trade => 
-      trade.id === id 
-        ? { ...trade, ...updates, updatedAt: new Date().toISOString() }
-        : trade
-    );
+    const newTrades = trades.map(t => (t.id === id ? updated : t));
     set({ trades: newTrades });
-    // 自动保存
-    setTimeout(() => get().saveTrades(), 0);
   },
   
-  deleteTrade: (id) => {
+  deleteTrade: async (id) => {
+    await apiDeleteTrade(id);
     const { trades } = get();
-    const newTrades = trades.filter(trade => trade.id !== id);
-    set({ trades: newTrades });
-    // 自动保存
-    setTimeout(() => get().saveTrades(), 0);
+    set({ trades: trades.filter(t => t.id !== id) });
   },
   
   setFilter: (filter) => set({ currentFilter: filter }),
@@ -70,7 +62,7 @@ export const useTradeStore = create<TradeState>((set, get) => ({
   loadTrades: async () => {
     set({ isLoading: true, error: null });
     try {
-      const trades = loadTradesFromLocalStorage();
+      const trades = await loadTrades();
       set({ trades, isLoading: false });
     } catch (error) {
       set({ 
@@ -80,14 +72,5 @@ export const useTradeStore = create<TradeState>((set, get) => ({
     }
   },
   
-  saveTrades: () => {
-    const { trades } = get();
-    try {
-      saveTradesToLocalStorage(trades);
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to save trades'
-      });
-    }
-  }
+  saveTrades: () => {}
 }));

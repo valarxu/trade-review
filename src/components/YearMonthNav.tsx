@@ -1,8 +1,9 @@
 import React from 'react';
-import { Calendar, ChevronDown, ChevronRight } from 'lucide-react';
+import { Calendar } from 'lucide-react';
+import { TradeRecord } from '../types/trade';
 
 interface YearMonthNavProps {
-  groupedTrades: { [key: string]: any[] };
+  groupedTrades: Record<string, TradeRecord[]>;
   selectedYear?: number;
   selectedMonth?: number;
   onSelectYearMonth: (year: number, month?: number) => void;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TradeRecord } from '../types/trade';
 import { formatCurrency, formatDate } from '../utils/calculations';
-import { TrendingUp, TrendingDown, Clock, CheckCircle, DollarSign, Target, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Clock, CheckCircle, DollarSign, Target, AlertTriangle, Calendar } from 'lucide-react';
 
 interface TradeCardProps {
   trade: TradeRecord;

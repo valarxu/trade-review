@@ -10,7 +10,6 @@ export function compressImage(file: File, maxWidth: number = 800, maxHeight: num
         let width = img.width;
         let height = img.height;
         
-        // 计算压缩后的尺寸
         if (width > maxWidth || height > maxHeight) {
           const ratio = Math.min(maxWidth / width, maxHeight / height);
           width = Math.floor(width * ratio);
@@ -28,7 +27,6 @@ export function compressImage(file: File, maxWidth: number = 800, maxHeight: num
         
         ctx.drawImage(img, 0, 0, width, height);
         
-        // 转换为Base64
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
         resolve(compressedDataUrl);
       };
@@ -85,13 +83,15 @@ export async function handleImageUpload(file: File, tradeId: string, type: 'entr
   }
   
   try {
-    // 压缩图片
-    const compressedImage = await compressImage(file);
-    
-    // 保存到localStorage
-    saveImageToLocalStorage(tradeId, compressedImage, type);
-    
-    return compressedImage;
+    const dataUrl = await compressImage(file);
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const form = new FormData();
+    form.append('file', blob, `${type}.jpg`);
+    const response = await fetch(`/api/images/${tradeId}/${type}`, { method: 'POST', body: form });
+    if (!response.ok) throw new Error('Failed to upload image');
+    const json = await response.json();
+    return json.path as string;
   } catch (error) {
     console.error('Error processing image upload:', error);
     throw new Error('Failed to process image upload');

@@ -191,7 +191,7 @@ export const TradeList: React.FC = () => {
                   ].map(option => (
                     <button
                       key={option.value}
-                      onClick={() => setFilterStatus(option.value as any)}
+                      onClick={() => setFilterStatus(option.value as 'all' | 'open' | 'closed')}
                       className={`px-3 py-1 rounded-md text-sm transition-colors duration-200 ${
                         filterStatus === option.value
                           ? 'bg-dark-green-700 text-white'

@@ -1,57 +1,41 @@
-# React + TypeScript + Vite
+# Trade Review
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 概述
+前端使用 React + Vite 构建，后端为 Node/Express 提供 JSON 与图片的本地文件存储，支持通过 PM2 持久运行。
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 目录结构
+```
+data/trades.json         # 交易数据
+images/{tradeId}/        # 图片目录
+server/index.js          # 后端服务
+deploy/nginx/trade-review.conf
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  extends: [
-    // other configs...
-    // Enable lint rules for React
-    reactX.configs['recommended-typescript'],
-    // Enable lint rules for React DOM
-    reactDom.configs.recommended,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 开发
 ```
+pnpm install
+pnpm dev
+```
+
+## 构建
+```
+pnpm build
+```
+
+## 后端启动（PM2）
+```
+pm2 start ecosystem.config.cjs
+pm2 save
+pm2 startup
+```
+
+后端默认监听 `127.0.0.1:3000`，Nginx 反向代理 `/api/`，并通过 `alias` 暴露 `/images/`。
+
+## Nginx
+参考 `deploy/nginx/trade-review.conf`，需确保：
+- `root /var/www/trade-review/dist`
+- `alias /var/www/trade-review/images/` 映射 `/images/`
+- `proxy_pass http://127.0.0.1:3000/` 代理 `/api/`
+
+## 数据备份
+备份 `data/trades.json` 与整个 `images/` 目录即可迁移数据。

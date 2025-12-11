@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { TradeRecord } from '../types/trade';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTradeStore } from '../store/tradeStore';
 import { ImageUpload } from '../components/ImageUpload';
 import { handleImageUpload } from '../services/imageService';
 import { formatCurrency, formatDate } from '../utils/calculations';
-import { ArrowLeft, Edit3, Save, X, TrendingUp, TrendingDown, Calendar, DollarSign, Target, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Edit3, Save, TrendingUp, TrendingDown, Calendar, DollarSign, Target, AlertTriangle, Calculator } from 'lucide-react';
 
 export const TradeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { trades, updateTrade } = useTradeStore();
   
-  const [trade, setTrade] = useState<any>(null);
+  const [trade, setTrade] = useState<TradeRecord | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     actualExitPrice: '',

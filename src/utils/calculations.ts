@@ -32,12 +32,13 @@ export function generateId(): string {
 }
 
 // 按年月分组交易
-export function groupTradesByMonth(trades: any[]): { [key: string]: any[] } {
-  return trades.reduce((groups, trade) => {
+import { TradeRecord } from '../types/trade';
+export function groupTradesByMonth(trades: TradeRecord[]): Record<string, TradeRecord[]> {
+  return trades.reduce<Record<string, TradeRecord[]>>((groups, trade) => {
     const date = new Date(trade.entryTime);
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     if (!groups[key]) {
-      groups[key] = [];
+      groups[key] = [] as TradeRecord[];
     }
     groups[key].push(trade);
     return groups;

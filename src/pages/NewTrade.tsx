@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTradeStore } from '../store/tradeStore';
 import { ImageUpload } from '../components/ImageUpload';
-import { calculateRiskRewardRatio, generateId } from '../utils/calculations';
+import { calculateRiskRewardRatio } from '../utils/calculations';
 import { handleImageUpload } from '../services/imageService';
 import { TradeRecord } from '../types/trade';
 import { ArrowLeft, Calculator, Save } from 'lucide-react';
@@ -20,7 +20,8 @@ export const NewTrade: React.FC = () => {
     expectedTakeProfit: ''
   });
   
-  const [entryImage, setEntryImage] = useState<string>();
+  const [entryImageFile, setEntryImageFile] = useState<File | null>(null);
+  const [entryImagePreview, setEntryImagePreview] = useState<string | undefined>();
   const [calculatedRRRatio, setCalculatedRRRatio] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,14 +50,10 @@ export const NewTrade: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = async (file: File) => {
-    try {
-      const tradeId = generateId(); // 临时ID用于图片存储
-      const imageData = await handleImageUpload(file, tradeId, 'entry');
-      setEntryImage(imageData);
-    } catch (error) {
-      alert('图片上传失败: ' + (error as Error).message);
-    }
+  const onUploadEntryImage = async (file: File) => {
+    setEntryImageFile(file);
+    const url = URL.createObjectURL(file);
+    setEntryImagePreview(url);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,11 +81,17 @@ export const NewTrade: React.FC = () => {
         expectedStopLoss: parseFloat(formData.expectedStopLoss),
         expectedTakeProfit: parseFloat(formData.expectedTakeProfit),
         expectedRRRatio: calculatedRRRatio,
-        status: 'open',
-        entryImage: entryImage
+        status: 'open'
       };
 
-      await addTrade(newTrade as TradeRecord);
+      const created = await addTrade(newTrade);
+      if (entryImageFile) {
+        try {
+          await handleImageUpload(entryImageFile, created.id, 'entry');
+        } catch (err) {
+          console.error(err);
+        }
+      }
       navigate('/');
     } catch (error) {
       alert('保存交易失败: ' + (error as Error).message);
@@ -253,9 +256,9 @@ export const NewTrade: React.FC = () => {
               <h2 className="text-xl font-semibold text-white mb-4">入场截图</h2>
               <ImageUpload
                 label="上传入场时的图表截图（可选）"
-                onImageUpload={handleImageUpload}
-                currentImage={entryImage}
-                onImageRemove={() => setEntryImage(undefined)}
+                onImageUpload={onUploadEntryImage}
+                currentImage={entryImagePreview}
+                onImageRemove={() => { setEntryImageFile(null); setEntryImagePreview(undefined); }}
               />
             </div>
 

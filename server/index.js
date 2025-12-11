@@ -117,6 +117,12 @@ app.post('/api/images/:id/:type', upload.single('file'), async (req, res) => {
     const type = req.params.type
     const ext = path.extname(req.file.filename) || '.jpg'
     const rel = `/images/${tradeId}/${type}${ext}`
+    if (req.file?.path) {
+      try {
+        await fsp.chmod(path.dirname(req.file.path), 0o755)
+        await fsp.chmod(req.file.path, 0o644)
+      } catch {}
+    }
     const trades = await readTrades()
     const idx = trades.findIndex(t => t.id === tradeId)
     if (idx !== -1) {

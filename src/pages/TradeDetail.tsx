@@ -86,6 +86,7 @@ export const TradeDetail: React.FC = () => {
         actualProfitLoss: parseFloat(editData.actualProfitLoss),
         summary: editData.summary,
         exitImage: exitImage,
+        exitTime: new Date().toISOString(),
         status: 'closed'
       });
       

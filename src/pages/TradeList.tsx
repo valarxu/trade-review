@@ -35,6 +35,12 @@ export const TradeList: React.FC = () => {
     return true;
   });
 
+  const sortedTrades = [...filteredTrades].sort((a, b) => {
+    const aTime = new Date(a.status === 'closed' && a.exitTime ? a.exitTime : a.entryTime).getTime();
+    const bTime = new Date(b.status === 'closed' && b.exitTime ? b.exitTime : b.entryTime).getTime();
+    return bTime - aTime;
+  });
+
   const handleSelectYearMonth = (year: number, month?: number) => {
     setSelectedYear(year);
     setSelectedMonth(month);
@@ -51,10 +57,10 @@ export const TradeList: React.FC = () => {
   };
 
   const getTradeStats = () => {
-    const total = filteredTrades.length;
-    const closed = filteredTrades.filter(t => t.status === 'closed').length;
-    const profitable = filteredTrades.filter(t => t.status === 'closed' && t.actualProfitLoss && t.actualProfitLoss > 0).length;
-    const totalProfit = filteredTrades.reduce((sum, t) => sum + (t.actualProfitLoss || 0), 0);
+    const total = sortedTrades.length;
+    const closed = sortedTrades.filter(t => t.status === 'closed').length;
+    const profitable = sortedTrades.filter(t => t.status === 'closed' && t.actualProfitLoss && t.actualProfitLoss > 0).length;
+    const totalProfit = sortedTrades.reduce((sum, t) => sum + (t.actualProfitLoss || 0), 0);
 
     return { total, closed, profitable, totalProfit };
   };
@@ -223,7 +229,7 @@ export const TradeList: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                filteredTrades.map(trade => (
+                sortedTrades.map(trade => (
                   <TradeCard
                     key={trade.id}
                     trade={trade}

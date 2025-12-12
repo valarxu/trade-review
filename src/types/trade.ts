@@ -11,6 +11,7 @@ export interface TradeRecord {
   // 实际结果（编辑时填写）
   actualExitPrice?: number; // 实际出场价格
   actualProfitLoss?: number; // 实际盈亏（含手续费）
+  exitTime?: string;
   summary?: string;          // 交易总结
   
   // 图片信息

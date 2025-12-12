@@ -106,7 +106,11 @@ app.put('/api/trades/:id', async (req, res) => {
     const trades = await readTrades()
     const idx = trades.findIndex(t => t.id === req.params.id)
     if (idx === -1) return res.status(404).json({ error: 'not_found' })
-    const updated = { ...trades[idx], ...req.body, updatedAt: new Date().toISOString() }
+    const prev = trades[idx]
+    const updated = { ...prev, ...req.body, updatedAt: new Date().toISOString() }
+    if (req.body.status === 'closed' && prev.status !== 'closed' && !req.body.exitTime) {
+      updated.exitTime = new Date().toISOString()
+    }
     trades[idx] = updated
     await writeTrades(trades)
     res.json(updated)

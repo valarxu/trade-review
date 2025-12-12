@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Upload, X } from 'lucide-react';
+import { ImagePreviewModal } from './ImagePreviewModal';
 
 interface ImageUploadProps {
   onImageUpload: (file: File) => void;
@@ -18,6 +19,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const handleFileSelect = (files: FileList | null) => {
     if (files && files[0]) {
@@ -57,7 +59,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             <img
               src={currentImage}
               alt="Preview"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover cursor-zoom-in"
+              onClick={() => setPreviewOpen(true)}
             />
             {onImageRemove && (
               <button
@@ -68,6 +71,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               </button>
             )}
           </div>
+          {previewOpen && currentImage && (
+            <ImagePreviewModal src={currentImage} onClose={() => setPreviewOpen(false)} />
+          )}
         </div>
       ) : (
         <div

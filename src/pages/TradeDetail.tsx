@@ -6,6 +6,7 @@ import { ImageUpload } from '../components/ImageUpload';
 import { handleImageUpload } from '../services/imageService';
 import { formatCurrency, formatDate } from '../utils/calculations';
 import { ArrowLeft, Edit3, Save, TrendingUp, TrendingDown, Calendar, DollarSign, Target, AlertTriangle, Calculator } from 'lucide-react';
+import { ImagePreviewModal } from '../components/ImagePreviewModal';
 
 export const TradeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,7 @@ export const TradeDetail: React.FC = () => {
   });
   const [exitImage, setExitImage] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -102,6 +104,7 @@ export const TradeDetail: React.FC = () => {
   const isLoss = trade.actualProfitLoss !== undefined && trade.actualProfitLoss < 0;
 
   return (
+    <>
     <div className="min-h-screen bg-gray-900">
       <div className="container mx-auto px-4 py-6">
         {/* 头部 */}
@@ -211,7 +214,8 @@ export const TradeDetail: React.FC = () => {
                 <img
                   src={trade.entryImage}
                   alt="入场截图"
-                  className="w-full rounded-lg"
+                  className="w-full rounded-lg cursor-zoom-in"
+                  onClick={() => setPreviewSrc(trade.entryImage!)}
                 />
               </div>
             )}
@@ -358,7 +362,8 @@ export const TradeDetail: React.FC = () => {
                 <img
                   src={trade.exitImage}
                   alt="出场截图"
-                  className="w-full rounded-lg"
+                  className="w-full rounded-lg cursor-zoom-in"
+                  onClick={() => setPreviewSrc(trade.exitImage!)}
                 />
               </div>
             )}
@@ -366,5 +371,9 @@ export const TradeDetail: React.FC = () => {
         </div>
       </div>
     </div>
+    {previewSrc && (
+      <ImagePreviewModal src={previewSrc} onClose={() => setPreviewSrc(null)} />
+    )}
+    </>
   );
 };

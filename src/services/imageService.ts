@@ -41,7 +41,7 @@ export function compressImage(file: File, maxWidth: number = 800, maxHeight: num
 }
 
 // 保存图片到localStorage
-export function saveImageToLocalStorage(tradeId: string, imageData: string, type: 'entry' | 'exit'): void {
+export function saveImageToLocalStorage(tradeId: string, imageData: string, type: 'entry' | 'exit' | 'plan' | 'summary'): void {
   try {
     const key = `trade_image_${tradeId}_${type}`;
     localStorage.setItem(key, imageData);
@@ -52,7 +52,7 @@ export function saveImageToLocalStorage(tradeId: string, imageData: string, type
 }
 
 // 从localStorage加载图片
-export function loadImageFromLocalStorage(tradeId: string, type: 'entry' | 'exit'): string | null {
+export function loadImageFromLocalStorage(tradeId: string, type: 'entry' | 'exit' | 'plan' | 'summary'): string | null {
   try {
     const key = `trade_image_${tradeId}_${type}`;
     return localStorage.getItem(key);
@@ -63,7 +63,7 @@ export function loadImageFromLocalStorage(tradeId: string, type: 'entry' | 'exit
 }
 
 // 删除图片
-export function deleteImageFromLocalStorage(tradeId: string, type: 'entry' | 'exit'): void {
+export function deleteImageFromLocalStorage(tradeId: string, type: 'entry' | 'exit' | 'plan' | 'summary'): void {
   try {
     const key = `trade_image_${tradeId}_${type}`;
     localStorage.removeItem(key);
@@ -73,7 +73,7 @@ export function deleteImageFromLocalStorage(tradeId: string, type: 'entry' | 'ex
 }
 
 // 处理图片上传
-export async function handleImageUpload(file: File, tradeId: string, type: 'entry' | 'exit'): Promise<string> {
+export async function handleImageUpload(file: File, tradeId: string, type: 'entry' | 'exit' | 'plan' | 'summary'): Promise<string> {
   if (!file.type.startsWith('image/')) {
     throw new Error('Please select an image file');
   }

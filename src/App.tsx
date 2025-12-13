@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { TradeList } from './pages/TradeList';
 import { NewTrade } from './pages/NewTrade';
 import { TradeDetail } from './pages/TradeDetail';
+import { NewPlan } from './pages/NewPlan';
+import { PlanDetail } from './pages/PlanDetail';
 
 function App() {
   return (
@@ -11,6 +13,8 @@ function App() {
         <Route path="/" element={<TradeList />} />
         <Route path="/trade/new" element={<NewTrade />} />
         <Route path="/trade/:id" element={<TradeDetail />} />
+        <Route path="/plan/new" element={<NewPlan />} />
+        <Route path="/plan/:id" element={<PlanDetail />} />
       </Routes>
     </BrowserRouter>
   );

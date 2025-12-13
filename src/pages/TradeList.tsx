@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTradeStore } from '../store/tradeStore';
+import { usePlanStore } from '../store/planStore';
 import { TradeCard } from '../components/TradeCard';
+import { PlanCard } from '../components/PlanCard';
 import { YearMonthNav } from '../components/YearMonthNav';
 import { groupTradesByMonth } from '../utils/calculations';
 import { Plus, Filter, BarChart3, Menu, X } from 'lucide-react';
@@ -9,6 +11,7 @@ import { Plus, Filter, BarChart3, Menu, X } from 'lucide-react';
 export const TradeList: React.FC = () => {
   const navigate = useNavigate();
   const { trades, currentFilter, setFilter, loadTrades, isLoading } = useTradeStore();
+  const { plans, loadPlans } = usePlanStore();
   const [selectedYear, setSelectedYear] = useState<number | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>();
   const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'closed'>('all');
@@ -16,7 +19,8 @@ export const TradeList: React.FC = () => {
 
   useEffect(() => {
     loadTrades();
-  }, [loadTrades]);
+    loadPlans();
+  }, [loadTrades, loadPlans]);
 
   const groupedTrades = groupTradesByMonth(trades);
 
@@ -52,8 +56,16 @@ export const TradeList: React.FC = () => {
     navigate('/trade/new');
   };
 
+  const handleNewPlan = () => {
+    navigate('/plan/new');
+  };
+
   const handleTradeClick = (tradeId: string) => {
     navigate(`/trade/${tradeId}`);
+  };
+
+  const handlePlanClick = (planId: string) => {
+    navigate(`/plan/${planId}`);
   };
 
   const getTradeStats = () => {
@@ -182,6 +194,33 @@ export const TradeList: React.FC = () => {
 
           {/* 右侧内容区域 */}
           <div className="flex-1">
+            {/* 交易计划区域 */}
+            <div className="bg-dark-green-600 rounded-lg p-4 mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-white">交易计划</h2>
+                  <p className="text-gray-300 text-sm">制定与复盘您的计划</p>
+                </div>
+                <button
+                  onClick={handleNewPlan}
+                  className="bg-dark-green-700 hover:bg-dark-green-800 text-white px-3 py-2 rounded-md flex items-center space-x-2 transition-colors duration-200"
+                >
+                  <Plus size={16} />
+                  <span className="hidden sm:inline">新建计划</span>
+                </button>
+              </div>
+              {plans.length === 0 ? (
+                <div className="text-gray-400">暂无交易计划，点击右上角新建。</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[...plans]
+                    .sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime())
+                    .map(plan => (
+                      <PlanCard key={plan.id} plan={plan} onClick={() => handlePlanClick(plan.id)} />
+                    ))}
+                </div>
+              )}
+            </div>
             {/* 筛选器 */}
             <div className="bg-dark-green-600 rounded-lg p-4 mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
@@ -211,8 +250,8 @@ export const TradeList: React.FC = () => {
               </div>
             </div>
 
-            {/* 交易卡片列表 */}
-            <div className="space-y-4">
+          {/* 交易卡片列表 */}
+          <div className="space-y-4">
               {filteredTrades.length === 0 ? (
                 <div className="text-center py-12 bg-dark-green-600 rounded-lg">
                   <div className="text-gray-400 mb-4">

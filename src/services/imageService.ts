@@ -1,19 +1,35 @@
-// 压缩图片
-export function compressImage(file: File, maxWidth: number = 800, maxHeight: number = 600): Promise<string> {
+// 压缩图片（保留清晰度与原格式；仅在尺寸超限时缩放）
+export function compressImage(
+  file: File,
+  maxWidth: number = 1600,
+  maxHeight: number = 1200,
+  jpegQuality: number = 0.92
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
     reader.onload = (e) => {
+      // GIF 保持原文件（避免动画丢失）
+      if (file.type === 'image/gif') {
+        resolve(e.target?.result as string);
+        return;
+      }
+      
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
         
-        if (width > maxWidth || height > maxHeight) {
+        const needResize = width > maxWidth || height > maxHeight;
+        if (needResize) {
           const ratio = Math.min(maxWidth / width, maxHeight / height);
           width = Math.floor(width * ratio);
           height = Math.floor(height * ratio);
+        } else {
+          // 尺寸不超限时直接返回原始数据，避免重复编码导致清晰度下降
+          resolve(e.target?.result as string);
+          return;
         }
         
         canvas.width = width;
@@ -27,7 +43,16 @@ export function compressImage(file: File, maxWidth: number = 800, maxHeight: num
         
         ctx.drawImage(img, 0, 0, width, height);
         
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        // 保留原格式：PNG 用 PNG，JPEG/WebP 用对应格式；默认降级为 JPEG
+        let outMime = 'image/jpeg';
+        if (file.type === 'image/png') outMime = 'image/png';
+        else if (file.type === 'image/webp') outMime = 'image/webp';
+        else if (file.type === 'image/jpeg' || file.type === 'image/jpg') outMime = 'image/jpeg';
+        
+        const compressedDataUrl =
+          outMime === 'image/png'
+            ? canvas.toDataURL('image/png')
+            : canvas.toDataURL(outMime, jpegQuality);
         resolve(compressedDataUrl);
       };
       
@@ -87,7 +112,14 @@ export async function handleImageUpload(file: File, tradeId: string, type: 'entr
     const res = await fetch(dataUrl);
     const blob = await res.blob();
     const form = new FormData();
-    form.append('file', blob, `${type}.jpg`);
+    // 根据数据URL的 MIME 设置正确的扩展名，避免误转为 JPG
+    const mime = dataUrl.split(';')[0].split(':')[1] || 'image/jpeg';
+    let ext = 'jpg';
+    if (mime === 'image/png') ext = 'png';
+    else if (mime === 'image/webp') ext = 'webp';
+    else if (mime === 'image/gif') ext = 'gif';
+    else if (mime === 'image/jpeg') ext = 'jpg';
+    form.append('file', blob, `${type}.${ext}`);
     const response = await fetch(`/api/images/${tradeId}/${type}`, { method: 'POST', body: form });
     if (!response.ok) throw new Error('Failed to upload image');
     const json = await response.json();

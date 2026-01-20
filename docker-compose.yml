@@ -1,0 +1,10 @@
+services:
+  trade-record:
+    build: .
+    ports:
+      - "3010:3000"
+    volumes:
+      - ./data:/app/data
+      - ./images:/app/images
+    restart: unless-stopped
+    container_name: trade-record-app

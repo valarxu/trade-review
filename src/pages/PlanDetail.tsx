@@ -2,15 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlanStore } from '../store/planStore';
 import { TradePlan } from '../types/plan';
+import { useTradeStore } from '../store/tradeStore';
+import { TradeCard } from '../components/TradeCard';
 import { ImageUpload } from '../components/ImageUpload';
 import { handleImageUpload } from '../services/imageService';
-import { ArrowLeft, Edit3, Save } from 'lucide-react';
+import { ArrowLeft, Edit3, Save, Plus } from 'lucide-react';
 import { ImagePreviewModal } from '../components/ImagePreviewModal';
 
 export const PlanDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { plans, updatePlan } = usePlanStore();
+  const { trades, loadTrades } = useTradeStore();
 
   const [plan, setPlan] = useState<TradePlan | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -18,6 +21,10 @@ export const PlanDetail: React.FC = () => {
   const [summaryImage, setSummaryImage] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadTrades();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -192,6 +199,34 @@ export const PlanDetail: React.FC = () => {
             </button>
           </div>
         )}
+
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">交易记录</h2>
+            <button
+              onClick={() => navigate(`/trade/new?planId=${plan.id}`)}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-200"
+            >
+              <Plus size={16} />
+              <span>新建交易</span>
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {trades.filter(t => t.planId === plan.id).map(trade => (
+              <TradeCard
+                key={trade.id}
+                trade={trade}
+                onClick={() => navigate(`/trade/${trade.id}`)}
+              />
+            ))}
+            {trades.filter(t => t.planId === plan.id).length === 0 && (
+              <div className="col-span-full text-center py-8 text-gray-400 bg-dark-green-600 rounded-lg">
+                暂无交易记录
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

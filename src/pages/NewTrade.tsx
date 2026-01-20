@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTradeStore } from '../store/tradeStore';
 import { ImageUpload } from '../components/ImageUpload';
 import { calculateRiskRewardRatio } from '../utils/calculations';
@@ -9,16 +9,28 @@ import { ArrowLeft, Calculator, Save } from 'lucide-react';
 
 export const NewTrade: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const planId = searchParams.get('planId');
+
   const { addTrade } = useTradeStore();
   
   const [formData, setFormData] = useState({
     symbol: '',
+    rule: 'EMA-ATR' as 'EMA-ATR' | 'Breakout',
     entryTime: new Date().toISOString().slice(0, 16),
     entryPrice: '',
     reason: '',
     expectedStopLoss: '',
     expectedTakeProfit: ''
   });
+
+  useEffect(() => {
+    if (!planId) {
+      alert('必须从交易计划中创建交易');
+      navigate('/');
+    }
+  }, [planId, navigate]);
+
   
   const [entryImageFile, setEntryImageFile] = useState<File | null>(null);
   const [entryImagePreview, setEntryImagePreview] = useState<string | undefined>();
@@ -74,6 +86,8 @@ export const NewTrade: React.FC = () => {
     
     try {
       const newTrade: Omit<TradeRecord, 'id' | 'createdAt' | 'updatedAt'> = {
+        planId: planId!,
+        rule: formData.rule,
         symbol: formData.symbol.toUpperCase(),
         entryTime: formData.entryTime,
         entryPrice: parseFloat(formData.entryPrice),
@@ -127,6 +141,22 @@ export const NewTrade: React.FC = () => {
               <h2 className="text-xl font-semibold text-white mb-4">基本信息</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-200 mb-2">
+                    交易规则 *
+                  </label>
+                  <select
+                    name="rule"
+                    value={formData.rule}
+                    onChange={(e) => setFormData(prev => ({ ...prev, rule: e.target.value as any }))}
+                    className="w-full px-3 py-2 bg-dark-green-700 border border-dark-green-500 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    required
+                  >
+                    <option value="EMA-ATR">EMA-ATR策略</option>
+                    <option value="Breakout">压力阻力突破</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-200 mb-2">
                     币种/交易品种 *

@@ -1,6 +1,8 @@
 export interface TradeRecord {
   id: string;
+  planId: string;           // 所属交易计划ID
   symbol: string;           // 币种/交易品种
+  rule: 'EMA-ATR' | 'Breakout'; // 交易规则/策略
   entryTime: string;        // 入场时间
   entryPrice: number;       // 入场价格
   reason: string;          // 开单理由
@@ -43,6 +45,7 @@ export interface AppState {
 }
 
 export interface TradeFormData {
+  rule: 'EMA-ATR' | 'Breakout';
   symbol: string;
   entryTime: string;
   entryPrice: string;

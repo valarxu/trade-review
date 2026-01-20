@@ -249,6 +249,15 @@ app.post('/api/images/:id/:type', upload.single('file'), async (req, res) => {
   }
 })
 
+app.use(express.static(path.join(rootDir, 'dist')))
+
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/images')) {
+    return res.sendStatus(404)
+  }
+  res.sendFile(path.join(rootDir, 'dist/index.html'))
+})
+
 ensureInit().then(() => {
   app.listen(PORT, () => {})
 })

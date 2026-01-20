@@ -43,6 +43,11 @@ export const TradeCard: React.FC<TradeCardProps> = ({ trade, onClick }) => {
           </span>
         </div>
         <div className="text-right">
+          <div className="mb-1">
+            <span className="px-2 py-0.5 rounded text-xs font-medium bg-dark-green-500 text-dark-green-100 border border-dark-green-400">
+              {trade.rule === 'EMA-ATR' ? 'EMA-ATR' : trade.rule === 'Breakout' ? '突破' : '未知策略'}
+            </span>
+          </div>
           {trade.status === 'closed' && trade.actualProfitLoss !== undefined && (
             <div className={`flex items-center space-x-2 ${isProfit ? 'text-green-400' : isLoss ? 'text-red-400' : 'text-gray-400'}`}>
               {isProfit ? <TrendingUp size={16} /> : isLoss ? <TrendingDown size={16} /> : <CheckCircle size={16} />}

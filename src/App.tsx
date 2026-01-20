@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { TradeList } from './pages/TradeList';
+import Home from './pages/Home';
 import { NewTrade } from './pages/NewTrade';
 import { TradeDetail } from './pages/TradeDetail';
 import { NewPlan } from './pages/NewPlan';
@@ -10,7 +10,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<TradeList />} />
+        <Route path="/" element={<Home />} />
         <Route path="/trade/new" element={<NewTrade />} />
         <Route path="/trade/:id" element={<TradeDetail />} />
         <Route path="/plan/new" element={<NewPlan />} />

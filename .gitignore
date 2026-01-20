@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Data and Images (Ignored for privacy and conflict prevention)
+data/*.json
+images/*
+!images/.gitkeep

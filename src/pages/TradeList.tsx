@@ -215,9 +215,20 @@ export const TradeList: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[...plans]
                     .sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime())
-                    .map(plan => (
-                      <PlanCard key={plan.id} plan={plan} onClick={() => handlePlanClick(plan.id)} />
-                    ))}
+                    .map(plan => {
+                      const planTrades = trades.filter(t => t.planId === plan.id);
+                      const tradeCount = planTrades.length;
+                      const totalProfit = planTrades.reduce((sum, t) => sum + (t.actualProfitLoss || 0), 0);
+                      return (
+                        <PlanCard 
+                          key={plan.id} 
+                          plan={plan} 
+                          tradeCount={tradeCount}
+                          totalProfit={totalProfit}
+                          onClick={() => handlePlanClick(plan.id)} 
+                        />
+                      );
+                    })}
                 </div>
               )}
             </div>
